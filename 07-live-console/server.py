@@ -90,11 +90,11 @@ def classify(kind, row):
     if kind == "ssh":
         failed = "Failed password" in raw
         match = re.search(r"from ([0-9a-fA-F:.]+)", raw)
-        return ("SSH failure" if failed else "SSH success", "T1110", "high" if failed else "medium", match.group(1) if match else (row.get("src") or "unknown"))
+        return ("SSH failure" if failed else "SSH success", "Attk101", "high" if failed else "medium", match.group(1) if match else (row.get("src") or "unknown"))
     if kind == "account":
         if code == "4732" and "Administrators" not in raw and "S-1-5-32-544" not in raw:
             return None
-        labels = {"4720": ("Local account created", "T1136.001", "high"), "4732": ("Administrator group changed", "T1136.001", "high"), "1102": ("Security log cleared", "T1070.001", "critical")}
+        labels = {"4720": ("Local account created", "Attk102", "high"), "4732": ("Administrator group changed", "Attk102", "high"), "1102": ("Security log cleared", "Attk104", "critical")}
         for candidate, label in labels.items():
             if code == candidate or re.search(r"EventCode\s*=\s*" + candidate, raw):
                 return (*label, row.get("TargetUserName") or row.get("Account_Name") or "")
@@ -111,12 +111,12 @@ def classify(kind, row):
     if not image.endswith(("powershell.exe", "pwsh.exe")):
         return None
     cradle = ("downloadstring", "downloadfile", "invoke-webrequest", "net.webclient", "encodedcommand")
-    lab_scripts = ("run_t1059_direct.ps1", "t1059-powershell-download-exec.ps1")
+    lab_scripts = ("run_attk103_direct.ps1", "Attk103_psuedoattacks.ps1")
     if not any(marker in command.lower() for marker in cradle + lab_scripts):
         return None
     row["CommandLine"] = command
     label = "PowerShell download command" if any(marker in command.lower() for marker in cradle) else "PowerShell lab payload script"
-    return (label, "T1059.001", "high", fields.get("User") or row.get("User") or "")
+    return (label, "Attk103", "high", fields.get("User") or row.get("User") or "")
 
 
 def build_snapshot(rows_by_kind, hours):
@@ -153,11 +153,11 @@ def build_snapshot(rows_by_kind, hours):
     burst = any(sum(1 for other in ssh_failures if 0 <= event["time"] - other["time"] <= 300 and event["actor"] == other["actor"]) >= 10 for event in ssh_failures)
     detections = []
     if burst:
-        detections.append({"title": "SSH failure burst", "technique": "T1110", "severity": "high", "reason": "10+ failures from one source within five minutes"})
-    for technique, title in (("T1136.001", "Account change"), ("T1059.001", "PowerShell download"), ("T1070.001", "Security log cleared")):
+        detections.append({"title": "SSH failure burst", "technique": "Attk101", "severity": "high", "reason": "10+ failures from one source within five minutes"})
+    for technique, title in (("Attk102", "Account change"), ("Attk103", "PowerShell download"), ("Attk104", "Security log cleared")):
         matching = [event for event in events if event["technique"] == technique]
         if matching:
-            detections.append({"title": title, "technique": technique, "severity": "critical" if technique == "T1070.001" else "high", "reason": f"{len(matching)} matching event(s) in selected window"})
+            detections.append({"title": title, "technique": technique, "severity": "critical" if technique == "Attk104" else "high", "reason": f"{len(matching)} matching event(s) in selected window"})
     return {
         "updated_at": now,
         "hours": hours,

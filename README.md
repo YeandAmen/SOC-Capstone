@@ -13,8 +13,12 @@ Splunk dashboard, and the live trace console show what Splunk actually ingests.
 | Windows VM | `192.168.64.2` | Sysmon, Splunk Universal Forwarder, OpenSSH Server | Monitored endpoint |
 | Kali VM | `192.168.64.4` | Splunk Universal Forwarder, OpenSSH Server | Monitored endpoint and lab attack machine |
 
-The IPs are examples from the original UTM setup. Use the `SPLUNK_HOST_IP`
-environment variable and the helper's `--ip` option when your addresses differ.
+The IPs in this repo (`192.168.64.x`) are examples from the original UTM lab.
+Clone users must substitute their own VM addresses. Set the `SPLUNK_HOST_IP`
+environment variable for forwarding (default 192.168.64.1). All Splunk data stays
+local to the host — the console binds to loopback and holds admin credentials
+only in server memory. To host the live console publicly would require removing
+credential handling; this repo is designed for local lab use only.
 The repo contains scripts and configuration, not VM disk images, Splunk
 installers, licenses, OS images, or production credentials.
 
@@ -66,7 +70,7 @@ install the Mac helper:
 python3 -m pip install -r requirements.txt
 python3 scripts/lab-ssh.py kali --user YOUR_KALI_USER --command 'hostname'
 python3 scripts/lab-ssh.py windows --user YOUR_WINDOWS_USER --command 'hostname'
-python3 scripts/lab-ssh.py windows --user YOUR_WINDOWS_USER --put 04-attacks/t1059-powershell-download-exec.ps1 'C:/SOC-Capstone/t1059-powershell-download-exec.ps1'
+python3 scripts/lab-ssh.py windows --user YOUR_WINDOWS_USER --put 04-attacks/Attk103_psuedoattacks.ps1 'C:/SOC-Capstone/Attk103_psuedoattacks.ps1'
 ```
 
 The helper uses Paramiko because password login through the Mac's OpenSSH
@@ -78,18 +82,18 @@ the endpoint setup and local account test in an elevated PowerShell prompt.
 ## Run the lab attacks
 
 Only use these scripts against your own lab VMs. The original run exercised
-T1110, T1136.001, and T1059.001; T1070.001 is provided but was not run because
+Attk101, Attk102, and Attk103; Attk104 is provided but was not run because
 it clears the Windows Security log.
 
 ```bash
 # Mac: copy and edit this ignored file for your own lab password candidates.
 cp 04-attacks/wordlist.example.txt 04-attacks/wordlist.txt
-python3 04-attacks/ssh-bruteforce.py --target 192.168.64.4 --user YOUR_KALI_USER --wordlist 04-attacks/wordlist.txt --delay 1.5
+python3 04-attacks/Attk101_psuedoattacks.py --target <kali-ip> --user <user> --wordlist 04-attacks/wordlist.txt --delay 1.5
 ```
 
-On Windows, run `t1136-localadmin.ps1` in an elevated PowerShell window. It
+On Windows, run `Attk102_psuedoattacks.ps1` in an elevated PowerShell window. It
 prompts for a password and creates `capstone_admin` (or a name supplied through
-`-AccountName`). Run `t1059-powershell-download-exec.ps1` to fetch and execute
+`-AccountName`). Run `Attk103_psuedoattacks.ps1` to fetch and execute
 the benign marker hosted in the Splunk app. The latter requires Windows to
 reach Mac port 8000. `04-attacks/README.md` has the attack detail and cleanup.
 No real password, timeline log, VM image, or Splunk data is committed.
@@ -104,6 +108,6 @@ No real password, timeline log, VM image, or Splunk data is committed.
   failed logins, and PowerShell download behavior can include legitimate
   administration or setup activity. Review the underlying events before
   attributing an attack.
-- [Detection notes](05-detection/README.md), [ATT&CK map](06-deliverables/attck-mapping.md),
+- [Detection notes](05-detection/README.md), [attack map](06-deliverables/attack-mapping.md),
   [architecture](06-deliverables/architecture.md), and
   [incident report template](06-deliverables/incident-report-template.md).

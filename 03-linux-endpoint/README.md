@@ -16,7 +16,7 @@ Env vars (optional): `SPLUNK_HOST_IP`, `SPLUNK_RECEIVE_PORT=9997`, `SPLUNK_INDEX
 ## What it collects
 | File | Sourcetype | Why |
 |------|-----------|-----|
-| `/var/log/auth.log` | `linux_secure` | SSH `Failed password` (T1110), `sudo`/`su`, `useradd` (T1136) |
+| `/var/log/auth.log` | `linux_secure` | SSH `Failed password` (Attk101), `sudo`/`su`, `useradd` (Attk102) |
 | `/var/log/syslog` | `syslog` | General system timeline / cron / service activity |
 
 ## Verify on Kali

@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <dashboard>
   <label>SOC Capstone — Attack Detection Dashboard</label>
-  <description>Real SPL detections for the simulated MITRE ATT&amp;CK techniques. Proof of ingestion + detection in one view.</description>
+  <description>Real SPL detections for the simulated pseudo-attack techniques. Proof of ingestion and detection in one view.</description>
 
-  <!-- ===== T1110 Brute Force ===== -->
+  <!-- ===== Attk101 Brute Force ===== -->
   <row>
     <panel>
-      <title>T1110 — SSH Brute Force (Linux auth.log) — top source IPs</title>
+      <title>Attk101 — SSH Brute Force (Linux auth.log) — top source IPs</title>
       <chart>
         <search>
           <query>index=soc_capstone sourcetype=linux_secure "Failed password"
@@ -22,7 +22,7 @@
       </chart>
     </panel>
     <panel>
-      <title>T1110 — Windows 4625 failed logons — top source</title>
+      <title>Attk101 — Windows 4625 failed logons — top source</title>
       <table>
         <search>
           <query>index=soc_capstone sourcetype=WinEventLog:Security EventCode=4625
@@ -37,10 +37,10 @@
     </panel>
   </row>
 
-  <!-- ===== T1136.001 Account creation ===== -->
+  <!-- ===== Attk102 Account creation ===== -->
   <row>
     <panel>
-      <title>T1136.001 — Local Account Creation (Security 4720) + Admin group adds</title>
+      <title>Attk102 — Local Account Creation (Security 4720) + Admin group adds</title>
       <table>
         <search>
           <query>index=soc_capstone sourcetype=WinEventLog:Security (EventCode=4720 OR EventCode=4728 OR EventCode=4732)
@@ -54,10 +54,10 @@
     </panel>
   </row>
 
-  <!-- ===== T1059.001 PowerShell download ===== -->
+  <!-- ===== Attk103 PowerShell download ===== -->
   <row>
     <panel>
-      <title>T1059.001 — PowerShell download cradle (Sysmon EID 1)</title>
+      <title>Attk103 — PowerShell download cradle (Sysmon EID 1)</title>
       <table>
         <search>
           <query>index=soc_capstone sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational EventID=1
@@ -71,7 +71,7 @@
       </table>
     </panel>
     <panel>
-      <title>T1059.001 — Network connections from PowerShell (Sysmon EID 3)</title>
+      <title>Attk103 — Network connections from PowerShell (Sysmon EID 3)</title>
       <table>
         <search>
           <query>index=soc_capstone sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational EventID=3
@@ -85,10 +85,10 @@
     </panel>
   </row>
 
-  <!-- ===== T1070.001 Log clearing ===== -->
+  <!-- ===== Attk104 Log clearing ===== -->
   <row>
     <panel>
-      <title>T1070.001 — Security log cleared (EID 1102 / Sysmon 4)</title>
+      <title>Attk104 — Security log cleared (EID 1102 / Sysmon 4)</title>
       <table>
         <search>
           <query>index=soc_capstone ((sourcetype=WinEventLog:Security EventCode=1102)

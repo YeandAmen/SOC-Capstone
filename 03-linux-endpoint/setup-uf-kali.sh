@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# =============================================================================
 # 03-linux-endpoint / setup-uf-kali.sh
 # Installs the Splunk Universal Forwarder on Kali (attacker + monitored Linux
 # endpoint). Forwards /var/log/auth.log + /var/log/syslog to the Mac indexer.
@@ -9,7 +8,6 @@
 #
 # Run as root on the Kali VM:
 #   sudo bash setup-uf-kali.sh
-# =============================================================================
 set -euo pipefail
 
 SPLUNK_HOST_IP="${SPLUNK_HOST_IP:-192.168.64.1}"
@@ -62,7 +60,7 @@ index = $INDEX_NAME
 EOF
 
 # --- inputs.conf : what to collect (auth.log + syslog) ------------------------
-# auth.log  -> SSH brute force (Failed password), sudo, su, useradd (T1136 on Linux)
+# auth.log  -> SSH password attempts (Failed password), sudo, su, useradd (Attk102 on Linux)
 # syslog    -> general system activity timeline
 log "Writing inputs.conf..."
 cat > "$UF_HOME/etc/system/local/inputs.conf" <<EOF
@@ -101,9 +99,7 @@ fi
 
 cat <<EOF
 
-============================================================
- Kali UF is forwarding:
+Kali UF is forwarding:
    /var/log/auth.log  -> $SPLUNK_HOST_IP:$RECEIVE_PORT  index=$INDEX_NAME
    /var/log/syslog    -> $SPLUNK_HOST_IP:$RECEIVE_PORT  index=$INDEX_NAME
-============================================================
 EOF

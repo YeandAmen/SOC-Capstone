@@ -2,7 +2,7 @@
 
 > Fill in the bracketed fields. This matches a standard SOC capstone rubric:
 > detection → analysis → timeline → scope → remediation → lessons learned.
-> Replace `<TECHNIQUE>` with the chosen attack (e.g. T1110 Brute Force).
+> Replace `<TECHNIQUE>` with the chosen attack (e.g. Attk101 SSH password guessing).
 
 ---
 
@@ -10,16 +10,15 @@
 - **Incident ID:** IR-<YYYYMMDD>-<NN>
 - **Title:** <e.g. SSH Brute Force Against Kali Endpoint>
 - **Date detected:** <UTC timestamp>
-- **Detection source:** Splunk saved search `SOC - T1110 SSH Brute Force (Linux)`
+- **Detection source:** Splunk saved search `SOC - Attk101 SSH Password Attempts (Linux)`
 - **Severity:** <Low/Med/High/Critical>
 - **Status:** <Open/Closed>
 - **Analyst:** <name>
 
-## 2. MITRE ATT&CK Mapping
-| Technique ID | Name | Tactic |
+## 2. Attack Mapping
+| Attack ID | Name | Tactic |
 |--------------|------|--------|
-| <T1110> | <Brute Force> | <Credential Access> |
-URL: https://attack.mitre.org/techniques/<T1110>/
+| <Attk101> | <SSH password guessing> | <Credential access> |
 
 ## 3. Affected Systems
 | Hostname | IP | OS | Role |
@@ -39,9 +38,9 @@ when ≥10 failures occur in the window — the canonical brute-force signature.
 ## 5. Timeline of Events
 | Time (UTC) | Event | Source | Evidence |
 |------------|-------|--------|----------|
-| <ts> | Brute force begins from <src> | `bruteforce_timeline.log` | `[T1110] Brute Force START` |
+| <ts> | Brute force begins from <src> | `attk101_timeline.log` | `[Attk101] Brute Force START` |
 | <ts> | Nth failed login | `auth.log` / Splunk | `Failed password for kali from <src>` |
-| <ts> | Valid credential found | `bruteforce_timeline.log` | `[T1110] SUCCESS ... pass=<pw>` |
+| <ts> | Valid credential found | `attk101_timeline.log` | `[Attk101] SUCCESS ... pass=<pw>` |
 | <ts> | Detection fires | Splunk alert | saved search triggered |
 | <ts> | Containment | analyst action | <e.g. firewall block> |
 
@@ -70,6 +69,6 @@ when ≥10 failures occur in the window — the canonical brute-force signature.
 - <e.g. add a correlation: brute force → successful 4624 within 1h = critical>
 
 ## 11. Appendices
-- A. Full `bruteforce_timeline.log`
+- A. Full `attk101_timeline.log`
 - B. Splunk search screenshot (PNG)
 - C. Dashboard panel screenshot

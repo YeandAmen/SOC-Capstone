@@ -14,8 +14,8 @@ flowchart LR
 
     WIN -- "WinEventLog + Sysmon\nUF -> :9997" --> MAC
     KALI -- "auth.log + syslog\nUF -> :9997" --> MAC
-    MAC -- "T1110 SSH password attempts" --> KALI
-    MAC -- "T1059.001 benign payload via Splunk Web" --> WIN
+    MAC -- "Attk101 SSH password attempts" --> KALI
+    MAC -- "Attk103 benign payload via Splunk Web" --> WIN
     MAC -. "analyst searches\n:8000" .-> USER((SOC Analyst))
 
     classDef siem fill:#1a73e8,color:#fff,stroke:#0d47a1
@@ -37,7 +37,7 @@ flowchart LR
 **Data flows (arrows):**
 1. Windows UF → `192.168.64.1:9997` — WinEventLog (Security/System/Application) + Sysmon Operational → index `soc_capstone`.
 2. Kali UF → `192.168.64.1:9997` — `/var/log/auth.log` + `/var/log/syslog` → index `soc_capstone`.
-3. Mac → Kali : SSH password attempts (T1110); Windows → Mac Splunk Web: benign PowerShell payload (T1059.001).
+3. Mac → Kali : SSH password attempts (Attk101); Mac → Windows Splunk Web: benign PowerShell payload (Attk103).
 4. SOC analyst → `http://192.168.64.1:8000` — Splunk searches + dashboard; `http://127.0.0.1:8765` — live trace console.
 
 **Security boundary:** all traffic stays on the UTM 192.168.64.0/24 isolated

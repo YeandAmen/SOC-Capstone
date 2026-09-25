@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# =============================================================================
 # Splunk Enterprise manager setup for the SOC Capstone (macOS host).
 # Manager = this Mac (192.168.64.1). Splunk 10.2.6 already installed at
 # /Applications/Splunk. This script is idempotent: it (re)sets the admin
@@ -9,7 +8,6 @@
 # Usage:
 #   export SPLUNK_ADMIN_PASSWORD='ChangeMe!123'
 #   bash setup-splunk-macos.sh
-# =============================================================================
 set -euo pipefail
 
 SPLUNK_HOME="${SPLUNK_HOME:-/Applications/Splunk}"
@@ -164,8 +162,7 @@ done
 
 cat <<EOF
 
-============================================================
- Splunk manager is ready
+Splunk manager is ready
 ------------------------------------------------------------
  Web UI .... http://$MAC_IP:$WEB_PORT   (admin / <SPLUNK_ADMIN_PASSWORD>)
  REST ...... https://$MAC_IP:$MGMT_PORT
@@ -174,5 +171,4 @@ cat <<EOF
 ------------------------------------------------------------
  From each VM, confirm reachability:
     nc -zv $MAC_IP $RECEIVE_PORT
-============================================================
 EOF

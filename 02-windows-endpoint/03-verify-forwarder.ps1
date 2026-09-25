@@ -1,9 +1,7 @@
-# =============================================================================
 # 02-windows-endpoint / 03-verify-forwarder.ps1
 # Verification checklist (no GUI): confirms the UF service is running, the
 # receiver is reachable, Sysmon is producing events, and the forwarder has
 # actually shipped bytes to the indexer. Run on the Windows VM.
-# =============================================================================
 $ErrorActionPreference = 'Continue'
 $SplunkHost  = if ($env:SPLUNK_HOST_IP) { $env:SPLUNK_HOST_IP } else { '192.168.64.1' }
 $ReceivePort = if ($env:SPLUNK_RECEIVE_PORT) { $env:SPLUNK_RECEIVE_PORT } else { '9997' }

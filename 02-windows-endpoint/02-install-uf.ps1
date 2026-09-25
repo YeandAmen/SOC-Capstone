@@ -1,10 +1,8 @@
-# =============================================================================
 # 02-windows-endpoint / 02-install-uf.ps1
 # Silent install of the Splunk Universal Forwarder, pointed at the Mac indexer
 # (192.168.64.1:9997). Uses the pinned UF 10.4.3 build from Splunk downloads.
 #
 # Run as Administrator on the Windows 11 VM.
-# =============================================================================
 #Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 

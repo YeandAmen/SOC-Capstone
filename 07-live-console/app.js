@@ -1,5 +1,5 @@
 const $ = id => document.getElementById(id);
-const colors = { 'T1110': '#65e7d1', 'T1136.001': '#eab45e', 'T1059.001': '#94a8ff', 'T1070.001': '#ff777c' };
+const colors = { 'Attk101': '#65e7d1', 'Attk102': '#eab45e', 'Attk103': '#94a8ff', 'Attk104': '#ff777c' };
 let current = null;
 let selectedHours = 24;
 

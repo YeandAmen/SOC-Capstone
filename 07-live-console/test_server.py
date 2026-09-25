@@ -25,7 +25,7 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(result["total"], 12)
         self.assertEqual(len(result["detections"]), 3)
         self.assertEqual(len(result["trace"]), 60)
-        self.assertEqual(sum(bin.get("T1110", 0) for bin in result["trace"]), 10)
+        self.assertEqual(sum(bin.get("Attk101", 0) for bin in result["trace"]), 10)
         self.assertEqual(result["hosts"], ["WIN-LAB", "kali"])
 
     def test_security_log_clear_is_critical(self):
@@ -38,10 +38,10 @@ class SnapshotTests(unittest.TestCase):
             return ("<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'>"
                     f"<System><EventID>{event_id}</EventID></System><EventData>"
                     "<Data Name='Image'>C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Data>"
-                    "<Data Name='CommandLine'>powershell.exe -File C:\\SOC-Capstone\\run_t1059_direct.ps1</Data>"
+                    "<Data Name='CommandLine'>powershell.exe -File C:\\SOC-Capstone\\run_attk103_direct.ps1</Data>"
                     "</EventData></Event>")
         self.assertIsNone(server.classify("powershell", {"_raw": xml(11)}))
-        self.assertEqual(server.classify("powershell", {"_raw": xml(1)})[1], "T1059.001")
+        self.assertEqual(server.classify("powershell", {"_raw": xml(1)})[1], "Attk103")
 
     def test_splunk_export_transport(self):
         class FakeSplunk(BaseHTTPRequestHandler):

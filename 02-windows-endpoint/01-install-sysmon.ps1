@@ -1,4 +1,3 @@
-# =============================================================================
 # 02-windows-endpoint / 01-install-sysmon.ps1
 # Installs Sysmon with the SwiftOnSecurity config (high-signal community config).
 # Run as Administrator on the Windows 11 VM (192.168.64.2).
@@ -13,7 +12,6 @@
 #    noise that would otherwise flood a lab indexer.
 #  - It is the de-facto standard cited in nearly every serious SOC / Threat
 #    Hunting reference, so detections built against it transfer directly.
-# =============================================================================
 #Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 
