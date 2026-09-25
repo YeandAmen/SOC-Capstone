@@ -99,7 +99,11 @@ No real password, timeline log, VM image, or Splunk data is committed.
 - Splunk dashboard: **SOC Capstone - Attack Detection Dashboard** in the
   `soc_capstone_detections` app.
 - Live trace: `http://127.0.0.1:8765`; chart points are observed event counts,
-  with rule matches and a timestamped event table.
+  with rule matches and a timestamped event table. Counts are matching
+  telemetry, not confirmed incidents: the SSH series includes accepted and
+  failed logins, and PowerShell download behavior can include legitimate
+  administration or setup activity. Review the underlying events before
+  attributing an attack.
 - [Detection notes](05-detection/README.md), [ATT&CK map](06-deliverables/attck-mapping.md),
   [architecture](06-deliverables/architecture.md), and
   [incident report template](06-deliverables/incident-report-template.md).

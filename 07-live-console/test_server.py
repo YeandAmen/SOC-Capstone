@@ -17,9 +17,9 @@ class SnapshotTests(unittest.TestCase):
         now = time.time()
         stamp = lambda seconds: __import__("datetime").datetime.fromtimestamp(seconds, __import__("datetime").timezone.utc).isoformat()
         rows = {
-            "ssh": [{"_time": stamp(now - i * 10), "host": "kali", "_raw": "Failed password for medusa from 192.168.64.1 port 50000 ssh2"} for i in range(10)],
+            "ssh": [{"_time": "09/24/2026 06:00:00 PM", "event_epoch": str(now - i * 10), "host": "kali", "_raw": "Failed password for medusa from 192.168.64.1 port 50000 ssh2"} for i in range(10)],
             "account": [{"_time": stamp(now - 30), "host": "WIN-LAB", "EventCode": "4720", "TargetUserName": "capstone_admin", "_raw": "EventCode=4720"}],
-            "powershell": [{"_time": stamp(now - 20), "host": "WIN-LAB", "EventID": "1", "User": "lab", "CommandLine": "powershell.exe DownloadString(...)"}],
+            "powershell": [{"_time": stamp(now - 20), "host": "WIN-LAB", "EventID": "1", "User": "lab", "_raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><EventID>1</EventID></System><EventData><Data Name='Image'>C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Data><Data Name='CommandLine'>powershell.exe DownloadString(...)</Data></EventData></Event>"}],
         }
         result = server.build_snapshot(rows, 1)
         self.assertEqual(result["total"], 12)
@@ -32,6 +32,16 @@ class SnapshotTests(unittest.TestCase):
         stamp = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
         result = server.build_snapshot({"account": [{"_time": stamp, "host": "WIN-LAB", "EventCode": "1102", "_raw": "EventCode=1102"}]}, 24)
         self.assertEqual(result["detections"][0]["severity"], "critical")
+
+    def test_sysmon_download_requires_process_creation(self):
+        def xml(event_id):
+            return ("<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'>"
+                    f"<System><EventID>{event_id}</EventID></System><EventData>"
+                    "<Data Name='Image'>C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Data>"
+                    "<Data Name='CommandLine'>powershell.exe -File C:\\SOC-Capstone\\run_t1059_direct.ps1</Data>"
+                    "</EventData></Event>")
+        self.assertIsNone(server.classify("powershell", {"_raw": xml(11)}))
+        self.assertEqual(server.classify("powershell", {"_raw": xml(1)})[1], "T1059.001")
 
     def test_splunk_export_transport(self):
         class FakeSplunk(BaseHTTPRequestHandler):

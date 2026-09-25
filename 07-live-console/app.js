@@ -33,6 +33,7 @@ function drawTrace() {
   }
   const max = Math.max(1, ...bins.map(bin => Object.values(bin).reduce((a,b) => a + b, 0)));
   for (const [technique, color] of Object.entries(colors)) {
+    if (!bins.some(bin => bin[technique])) continue;
     ctx.beginPath();
     bins.forEach((bin, i) => {
       const value = bin[technique] || 0;

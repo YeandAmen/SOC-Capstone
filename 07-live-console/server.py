@@ -12,6 +12,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from collections import Counter
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -29,7 +30,7 @@ TLS_VERIFY = os.environ.get("SPLUNK_TLS_VERIFY", "0") == "1"
 SEARCHES = {
     "ssh": 'sourcetype=linux_secure ("Failed password" OR "Accepted password")',
     "account": 'sourcetype=WinEventLog:Security (EventCode=4720 OR EventCode=4732 OR EventCode=1102)',
-    "powershell": 'sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational EventID=1 (DownloadString OR DownloadFile OR Invoke-WebRequest OR Net.WebClient OR EncodedCommand)',
+    "powershell": 'sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational (DownloadString OR DownloadFile OR Invoke-WebRequest OR Net.WebClient OR EncodedCommand)',
 }
 MAX_PER_SEARCH = 250
 _cache = {}
@@ -50,8 +51,7 @@ def check_splunk_login(user, password):
         return response.status == 200
 
 
-def splunk_search(query, earliest):
-    search = f"search index={INDEX} earliest=-{earliest}h {query} | head {MAX_PER_SEARCH} | table _time host sourcetype EventCode EventID src Source_Network_Address User Account_Name TargetUserName CommandLine _raw"
+def run_export(search):
     body = urllib.parse.urlencode({"search": search, "output_mode": "json", "preview": "false"}).encode()
     request = urllib.request.Request(
         f"{SPLUNK_URL}/services/search/jobs/export",
@@ -63,11 +63,22 @@ def splunk_search(query, earliest):
     )
     context = None if TLS_VERIFY else ssl._create_unverified_context()
     with urllib.request.urlopen(request, timeout=25, context=context) as response:
-        return [item["result"] for line in response for item in [json.loads(line)] if "result" in item]
+        items = [json.loads(line) for line in response if line.strip()]
+    errors = [message.get("text", "Splunk search error") for item in items for message in item.get("messages", []) if message.get("type") == "ERROR"]
+    if errors:
+        raise ValueError("; ".join(errors))
+    return [item["result"] for item in items if "result" in item]
+
+
+def splunk_search(query, earliest):
+    search = f"search index={INDEX} earliest=-{earliest}h {query} | head {MAX_PER_SEARCH} | eval event_epoch=round(_time,3) | table event_epoch _time host sourcetype EventCode EventID src Source_Network_Address User Account_Name TargetUserName CommandLine _raw"
+    return run_export(search)
 
 
 def parse_time(value):
     try:
+        if isinstance(value, (int, float)) or (isinstance(value, str) and value.replace(".", "", 1).isdigit()):
+            return float(value)
         return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
     except (ValueError, AttributeError):
         return 0
@@ -81,24 +92,45 @@ def classify(kind, row):
         match = re.search(r"from ([0-9a-fA-F:.]+)", raw)
         return ("SSH failure" if failed else "SSH success", "T1110", "high" if failed else "medium", match.group(1) if match else (row.get("src") or "unknown"))
     if kind == "account":
+        if code == "4732" and "Administrators" not in raw and "S-1-5-32-544" not in raw:
+            return None
         labels = {"4720": ("Local account created", "T1136.001", "high"), "4732": ("Administrator group changed", "T1136.001", "high"), "1102": ("Security log cleared", "T1070.001", "critical")}
         for candidate, label in labels.items():
             if code == candidate or re.search(r"EventCode\s*=\s*" + candidate, raw):
                 return (*label, row.get("TargetUserName") or row.get("Account_Name") or "")
         return None
-    return ("PowerShell download command", "T1059.001", "high", row.get("User") or "")
+    try:
+        root = ET.fromstring(raw)
+    except ET.ParseError:
+        return None
+    if root.findtext(".//{*}System/{*}EventID") != "1":
+        return None
+    fields = {item.get("Name"): item.text or "" for item in root.findall(".//{*}EventData/{*}Data")}
+    image = (fields.get("Image") or row.get("Image") or "").lower()
+    command = fields.get("CommandLine") or row.get("CommandLine") or ""
+    if not image.endswith(("powershell.exe", "pwsh.exe")):
+        return None
+    cradle = ("downloadstring", "downloadfile", "invoke-webrequest", "net.webclient", "encodedcommand")
+    lab_scripts = ("run_t1059_direct.ps1", "t1059-powershell-download-exec.ps1")
+    if not any(marker in command.lower() for marker in cradle + lab_scripts):
+        return None
+    row["CommandLine"] = command
+    label = "PowerShell download command" if any(marker in command.lower() for marker in cradle) else "PowerShell lab payload script"
+    return (label, "T1059.001", "high", fields.get("User") or row.get("User") or "")
 
 
 def build_snapshot(rows_by_kind, hours):
     events = []
+    unparsed_time = 0
     for kind, rows in rows_by_kind.items():
         for row in rows:
             classified = classify(kind, row)
             if not classified:
                 continue
             label, technique, severity, actor = classified
-            timestamp = parse_time(row.get("_time"))
+            timestamp = parse_time(row.get("event_epoch") or row.get("_time"))
             if not timestamp:
+                unparsed_time += 1
                 continue
             events.append({
                 "time": timestamp,
@@ -136,6 +168,8 @@ def build_snapshot(rows_by_kind, hours):
         "hosts": sorted({event["host"] for event in events}),
         "total": len(events),
         "limited": any(len(rows) == MAX_PER_SEARCH for rows in rows_by_kind.values()),
+        "source_rows": {kind: len(rows) for kind, rows in rows_by_kind.items()},
+        "unparsed_time": unparsed_time,
     }
 
 
@@ -185,6 +219,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         route = urllib.parse.urlparse(self.path)
+        if route.path == "/api/health":
+            if not SPLUNK_PASSWORD:
+                return self.send_json({"error": "Connect to Splunk first"}, 503)
+            try:
+                rows = run_export(f"search index={INDEX} earliest=-72h | stats count by sourcetype")
+                return self.send_json({"index": INDEX, "sourcetypes": rows})
+            except (urllib.error.URLError, TimeoutError, ValueError) as exc:
+                return self.send_json({"error": f"Splunk search failed: {exc}"}, 502)
         if route.path == "/api/events":
             if not SPLUNK_PASSWORD:
                 return self.send_json({"error": "Connect to Splunk to view live events."}, 503)
