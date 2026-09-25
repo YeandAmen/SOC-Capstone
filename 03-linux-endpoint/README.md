@@ -9,7 +9,7 @@ created) — the same logs a real IR team would pull off a compromised box.
 
 ## Run (on Kali, as root)
 ```bash
-sudo SPLUNK_HOST_IP=192.168.64.1 bash setup-uf-kali.sh
+sudo SPLUNK_HOST_IP=<mac-ip> bash setup-uf-kali.sh
 ```
 Env vars (optional): `SPLUNK_HOST_IP`, `SPLUNK_RECEIVE_PORT=9997`, `SPLUNK_INDEX=soc_capstone`.
 
@@ -22,7 +22,7 @@ Env vars (optional): `SPLUNK_HOST_IP`, `SPLUNK_RECEIVE_PORT=9997`, `SPLUNK_INDEX
 ## Verify on Kali
 ```bash
 /opt/splunkforwarder/bin/splunk status
-nc -zv 192.168.64.1 9997
+nc -zv <mac-ip> 9997
 tail -f /opt/splunkforwarder/var/log/splunk/metrics.log | grep tcpout
 ```
 Then on the Mac, in Splunk:

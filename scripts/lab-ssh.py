@@ -22,7 +22,7 @@ def main():
     except ImportError:
         parser.error("Install dependency: python3 -m pip install -r requirements.txt")
 
-    address = args.ip or {"kali": "192.168.64.4", "windows": "192.168.64.2"}[args.host]
+    address = args.ip or {"kali": "<kali-ip>", "windows": "<windows-ip>"}[args.host]
     password = getpass.getpass(f"{args.user}@{address} SSH password: ")
     client = paramiko.SSHClient()
     client.load_system_host_keys()

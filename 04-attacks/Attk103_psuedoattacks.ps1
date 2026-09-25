@@ -7,7 +7,7 @@
 # Run on the Windows VM after deploying the Splunk app static payload.
 $ErrorActionPreference = 'Stop'
 
-$SplunkHost = if ($env:SPLUNK_HOST_IP) { $env:SPLUNK_HOST_IP } else { '192.168.64.1' }
+$SplunkHost = if ($env:SPLUNK_HOST_IP) { $env:SPLUNK_HOST_IP } else { '<mac-ip>' }
 $PayloadUrl = if ($env:CAPSTONE_PAYLOAD_URL) { $env:CAPSTONE_PAYLOAD_URL } else { "http://$SplunkHost`:8000/en-US/static/app/soc_capstone_detections/soc_benign_payload.ps1" }
 $LogFile = Join-Path $PSScriptRoot 'attk103_timeline.log'
 

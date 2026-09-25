@@ -9,13 +9,13 @@ Splunk dashboard, and the live trace console show what Splunk actually ingests.
 
 | Node | Example IP | Software | Role |
 | --- | --- | --- | --- |
-| Mac host | `192.168.64.1` | Splunk Enterprise | Indexer, search head, receiver, live console |
-| Windows VM | `192.168.64.2` | Sysmon, Splunk Universal Forwarder, OpenSSH Server | Monitored endpoint |
-| Kali VM | `192.168.64.4` | Splunk Universal Forwarder, OpenSSH Server | Monitored endpoint and lab attack machine |
+| Mac host | `<mac-ip>` | Splunk Enterprise | Indexer, search head, receiver, live console |
+| Windows VM | `<windows-ip>` | Sysmon, Splunk Universal Forwarder, OpenSSH Server | Monitored endpoint |
+| Kali VM | `<kali-ip>` | Splunk Universal Forwarder, OpenSSH Server | Monitored endpoint and lab attack machine |
 
 The IPs in this repo (`192.168.64.x`) are examples from the original UTM lab.
 Clone users must substitute their own VM addresses. Set the `SPLUNK_HOST_IP`
-environment variable for forwarding (default 192.168.64.1). All Splunk data stays
+environment variable for forwarding (default <mac-ip>). All Splunk data stays
 local to the host — the console binds to loopback and holds admin credentials
 only in server memory. To host the live console publicly would require removing
 credential handling; this repo is designed for local lab use only.
@@ -63,7 +63,7 @@ Start-Service sshd
 
 On Kali, run `sudo apt install openssh-server` followed by
 `sudo systemctl enable --now ssh`. Confirm the Mac can reach both VM addresses
-on port 22 with `nc -vz 192.168.64.2 22` and `nc -vz 192.168.64.4 22`, then
+on port 22 with `nc -vz <windows-ip> 22` and `nc -vz <kali-ip> 22`, then
 install the Mac helper:
 
 ```bash

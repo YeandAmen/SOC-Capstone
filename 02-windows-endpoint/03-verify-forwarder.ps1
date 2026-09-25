@@ -3,7 +3,7 @@
 # receiver is reachable, Sysmon is producing events, and the forwarder has
 # actually shipped bytes to the indexer. Run on the Windows VM.
 $ErrorActionPreference = 'Continue'
-$SplunkHost  = if ($env:SPLUNK_HOST_IP) { $env:SPLUNK_HOST_IP } else { '192.168.64.1' }
+$SplunkHost  = if ($env:SPLUNK_HOST_IP) { $env:SPLUNK_HOST_IP } else { '<mac-ip>' }
 $ReceivePort = if ($env:SPLUNK_RECEIVE_PORT) { $env:SPLUNK_RECEIVE_PORT } else { '9997' }
 $UFHome      = "C:\Program Files\SplunkUniversalForwarder"
 

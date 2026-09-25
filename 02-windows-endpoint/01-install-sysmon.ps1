@@ -1,6 +1,6 @@
 # 02-windows-endpoint / 01-install-sysmon.ps1
 # Installs Sysmon with the SwiftOnSecurity config (high-signal community config).
-# Run as Administrator on the Windows 11 VM (192.168.64.2).
+# Run as Administrator on the Windows 11 VM (<windows-ip>).
 #
 # WHY SwiftOnSecurity over default Windows logging:
 #  - Default Windows Event logs miss process command lines, image loads, network

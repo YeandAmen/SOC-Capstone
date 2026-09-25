@@ -6,9 +6,9 @@ is already installed at `/Applications/Splunk`. Splunk is NOT installed on any V
 
 | Node | IP | Role |
 |------|----|------|
-| This Mac | 192.168.64.1 | Splunk Enterprise (indexer + search head + receiver) |
-| Windows 11 VM | 192.168.64.2 | Victim endpoint → forwards logs to .1:9997 |
-| Kali VM | 192.168.64.4 | Attacker **and** monitored Linux endpoint → forwards logs to .1:9997 |
+| This Mac | <mac-ip> | Splunk Enterprise (indexer + search head + receiver) |
+| Windows 11 VM | <windows-ip> | Victim endpoint → forwards logs to .1:9997 |
+| Kali VM | <kali-ip> | Attacker **and** monitored Linux endpoint → forwards logs to .1:9997 |
 
 ## Run
 ```bash
@@ -17,7 +17,7 @@ bash setup-splunk-macos.sh
 ```
 Variables (all optional, defaults shown):
 - `SPLUNK_ADMIN_PASSWORD` — **required**, the admin password to (re)set
-- `SPLUNK_HOST_IP=192.168.64.1`
+- `SPLUNK_HOST_IP=<mac-ip>`
 - `SPLUNK_INDEX=soc_capstone`
 - `SPLUNK_RECEIVE_PORT=9997`
 - `SPLUNK_WEB_PORT=8000`

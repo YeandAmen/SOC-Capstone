@@ -23,7 +23,7 @@
 ## 3. Affected Systems
 | Hostname | IP | OS | Role |
 |----------|----|----|------|
-| <kali> | 192.168.64.4 | Kali | <victim endpoint> |
+| <kali> | <kali-ip> | Kali | <victim endpoint> |
 
 ## 4. Detection Logic (SPL)
 ```splunk

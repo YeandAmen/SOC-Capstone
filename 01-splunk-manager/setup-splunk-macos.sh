@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Splunk Enterprise manager setup for the SOC Playground (macOS host).
-# Manager = this Mac (192.168.64.1). Splunk 10.2.6 already installed at
+# Manager = this Mac (<mac-ip>). Splunk 10.2.6 already installed at
 # /Applications/Splunk. This script is idempotent: it (re)sets the admin
 # password on first install, starts Splunk, enables the receiver, creates a dedicated
 # index, opens the macOS app firewall, and installs a launchd auto-start.
@@ -16,7 +16,7 @@ INDEX_NAME="${SPLUNK_INDEX:-soc_capstone}"
 RECEIVE_PORT="${SPLUNK_RECEIVE_PORT:-9997}"
 WEB_PORT="${SPLUNK_WEB_PORT:-8000}"
 MGMT_PORT="${SPLUNK_MGMT_PORT:-8089}"
-MAC_IP="${SPLUNK_HOST_IP:-192.168.64.1}"
+MAC_IP="${SPLUNK_HOST_IP:-<mac-ip>}"
 
 log() { printf '[*] %s\n' "$*"; }
 warn() { printf '[!] %s\n' "$*" >&2; }

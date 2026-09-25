@@ -10,7 +10,7 @@
 #   sudo bash setup-uf-kali.sh
 set -euo pipefail
 
-SPLUNK_HOST_IP="${SPLUNK_HOST_IP:-192.168.64.1}"
+SPLUNK_HOST_IP="${SPLUNK_HOST_IP:-<mac-ip>}"
 RECEIVE_PORT="${SPLUNK_RECEIVE_PORT:-9997}"
 INDEX_NAME="${SPLUNK_INDEX:-soc_capstone}"
 UF_VERSION="10.4.3"

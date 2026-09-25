@@ -1,13 +1,13 @@
 # 02-windows-endpoint / 02-install-uf.ps1
 # Silent install of the Splunk Universal Forwarder, pointed at the Mac indexer
-# (192.168.64.1:9997). Uses the pinned UF 10.4.3 build from Splunk downloads.
+# (<mac-ip>:9997). Uses the pinned UF 10.4.3 build from Splunk downloads.
 #
 # Run as Administrator on the Windows 11 VM.
 #Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 
 # ---- Config (override with env vars if needed) -----------------------------
-$SplunkHost   = if ($env:SPLUNK_HOST_IP) { $env:SPLUNK_HOST_IP } else { '192.168.64.1' }
+$SplunkHost   = if ($env:SPLUNK_HOST_IP) { $env:SPLUNK_HOST_IP } else { '<mac-ip>' }
 $ReceivePort  = if ($env:SPLUNK_RECEIVE_PORT) { $env:SPLUNK_RECEIVE_PORT } else { '9997' }
 $UF_INDEX     = if ($env:SPLUNK_INDEX) { $env:SPLUNK_INDEX } else { 'soc_capstone' }
 $UFVersion    = '10.4.3'
