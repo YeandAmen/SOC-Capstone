@@ -1,4 +1,4 @@
-# SOC Capstone
+# SOC Playground
 
 A reproducible SOC lab with a Mac running Splunk Enterprise, a Windows 11
 endpoint, and a Kali Linux endpoint on one UTM virtual network. Both VMs send

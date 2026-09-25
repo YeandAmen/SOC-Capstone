@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Splunk Enterprise manager setup for the SOC Capstone (macOS host).
+# Splunk Enterprise manager setup for the SOC Playground (macOS host).
 # Manager = this Mac (192.168.64.1). Splunk 10.2.6 already installed at
 # /Applications/Splunk. This script is idempotent: it (re)sets the admin
 # password on first install, starts Splunk, enables the receiver, creates a dedicated

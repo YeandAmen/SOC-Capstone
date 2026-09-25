@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <dashboard>
-  <label>SOC Capstone — Attack Detection Dashboard</label>
+  <label>SOC Playground — Attack Detection Dashboard</label>
   <description>Real SPL detections for the simulated pseudo-attack techniques. Proof of ingestion and detection in one view.</description>
 
   <!-- ===== Attk101 Brute Force ===== -->
