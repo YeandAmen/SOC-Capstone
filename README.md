@@ -40,15 +40,27 @@ installers, licenses, OS images, or production credentials.
    searches, Splunk dashboard, and benign PowerShell payload. This restarts
    Splunk. Verify `index=soc_capstone | stats count by host,sourcetype` in
    Splunk Search. Both endpoints should appear.
-6. Run `bash 07-live-console/start-macos.sh` on the Mac, enter the Splunk admin
-   password, and open `http://127.0.0.1:8765`. The console searches Splunk
+6. Run `bash 07-live-console/start-macos.sh` on the Mac, open
+   `http://127.0.0.1:8765`, and enter the Splunk admin password in the local
+   connection form. The console searches Splunk
    every 15 seconds. The regular Splunk UI remains at
    `http://127.0.0.1:8000`.
 
 ## Mac to VM SSH
 
-The Mac is the control host. Enable OpenSSH Server on Windows and `sshd` on
-Kali, confirm the Mac can reach VM port 22, then install the Mac helper:
+The Mac is the control host. In an elevated Windows PowerShell prompt, enable
+OpenSSH Server and start it:
+
+```powershell
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+Set-Service -Name sshd -StartupType Automatic
+Start-Service sshd
+```
+
+On Kali, run `sudo apt install openssh-server` followed by
+`sudo systemctl enable --now ssh`. Confirm the Mac can reach both VM addresses
+on port 22 with `nc -vz 192.168.64.2 22` and `nc -vz 192.168.64.4 22`, then
+install the Mac helper:
 
 ```bash
 python3 -m pip install -r requirements.txt
