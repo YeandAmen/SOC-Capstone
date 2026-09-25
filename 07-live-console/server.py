@@ -2,6 +2,7 @@
 """Local, read-only bridge from Splunk search to the capstone console."""
 
 import base64
+import ipaddress
 import json
 import os
 import re
@@ -35,6 +36,20 @@ _cache = {}
 _cache_lock = threading.Lock()
 
 
+def auth_header(user, password):
+    return "Basic " + base64.b64encode(f"{user}:{password}".encode()).decode()
+
+
+def check_splunk_login(user, password):
+    request = urllib.request.Request(
+        f"{SPLUNK_URL}/services/server/info?output_mode=json",
+        headers={"Authorization": auth_header(user, password)},
+    )
+    context = None if TLS_VERIFY else ssl._create_unverified_context()
+    with urllib.request.urlopen(request, timeout=10, context=context) as response:
+        return response.status == 200
+
+
 def splunk_search(query, earliest):
     search = f"search index={INDEX} earliest=-{earliest}h {query} | head {MAX_PER_SEARCH} | table _time host sourcetype EventCode EventID src Source_Network_Address User Account_Name TargetUserName CommandLine _raw"
     body = urllib.parse.urlencode({"search": search, "output_mode": "json", "preview": "false"}).encode()
@@ -42,7 +57,7 @@ def splunk_search(query, earliest):
         f"{SPLUNK_URL}/services/search/jobs/export",
         data=body,
         headers={
-            "Authorization": "Basic " + base64.b64encode(f"{SPLUNK_USER}:{SPLUNK_PASSWORD}".encode()).decode(),
+            "Authorization": auth_header(SPLUNK_USER, SPLUNK_PASSWORD),
             "Content-Type": "application/x-www-form-urlencoded",
         },
     )
@@ -137,11 +152,42 @@ def snapshot(hours):
 
 
 class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        if self.path != "/api/connect":
+            return self.send_error(404)
+        if not ipaddress.ip_address(self.client_address[0]).is_loopback:
+            return self.send_json({"error": "Local access only"}, 403)
+        origin = self.headers.get("Origin")
+        if origin and origin != f"http://{self.headers.get('Host')}":
+            return self.send_json({"error": "Invalid origin"}, 403)
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if not 0 < length <= 4096:
+                return self.send_json({"error": "Invalid request"}, 400)
+            payload = json.loads(self.rfile.read(length))
+            user = str(payload.get("user", "admin"))
+            password = str(payload.get("password", ""))
+            if not user or not password:
+                return self.send_json({"error": "Enter a Splunk username and password"}, 400)
+            if not check_splunk_login(user, password):
+                return self.send_json({"error": "Splunk rejected these credentials"}, 401)
+            global SPLUNK_USER, SPLUNK_PASSWORD
+            with _cache_lock:
+                SPLUNK_USER, SPLUNK_PASSWORD = user, password
+                _cache.clear()
+            return self.send_json({"connected": True})
+        except urllib.error.HTTPError as exc:
+            if exc.code == 401:
+                return self.send_json({"error": "Splunk rejected these credentials"}, 401)
+            return self.send_json({"error": f"Splunk returned HTTP {exc.code}"}, 502)
+        except (urllib.error.URLError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
+            return self.send_json({"error": f"Could not connect to Splunk: {exc}"}, 502)
+
     def do_GET(self):
         route = urllib.parse.urlparse(self.path)
         if route.path == "/api/events":
             if not SPLUNK_PASSWORD:
-                return self.send_json({"error": "Set SPLUNK_PASSWORD before starting the console."}, 503)
+                return self.send_json({"error": "Connect to Splunk to view live events."}, 503)
             try:
                 hours = int(urllib.parse.parse_qs(route.query).get("hours", [24])[0])
                 if hours not in (1, 6, 24, 72):

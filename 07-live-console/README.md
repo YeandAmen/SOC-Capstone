@@ -10,8 +10,10 @@ Start Splunk and the console:
 bash 07-live-console/start-macos.sh
 ```
 
-The launcher prompts for the Splunk admin password. You can instead supply
-`SPLUNK_PASSWORD` from a secret manager. `SPLUNK_URL`, `SPLUNK_USER`,
+The launcher prompts for the Splunk admin password. If the server starts
+without one, the page shows a local connection form; the password stays in
+server memory and is not written to disk or returned to the browser. You can
+instead supply `SPLUNK_PASSWORD` from a secret manager. `SPLUNK_URL`, `SPLUNK_USER`,
 `SPLUNK_INDEX`, `CONSOLE_HOST`, and `CONSOLE_PORT` are optional overrides.
 Set `SPLUNK_TLS_VERIFY=1` after installing a trusted certificate for Splunk's
 management endpoint.

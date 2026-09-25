@@ -1,6 +1,9 @@
 import importlib.util
+import json
+import threading
 import time
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 
@@ -29,6 +32,35 @@ class SnapshotTests(unittest.TestCase):
         stamp = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
         result = server.build_snapshot({"account": [{"_time": stamp, "host": "WIN-LAB", "EventCode": "1102", "_raw": "EventCode=1102"}]}, 24)
         self.assertEqual(result["detections"][0]["severity"], "critical")
+
+    def test_splunk_export_transport(self):
+        class FakeSplunk(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.end_headers()
+
+            def do_POST(self):
+                body = json.dumps({"result": {"_time": "2026-09-24T18:00:00+00:00", "host": "kali"}}).encode() + b"\n"
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *args):
+                pass
+
+        fake = ThreadingHTTPServer(("127.0.0.1", 0), FakeSplunk)
+        thread = threading.Thread(target=fake.serve_forever, daemon=True)
+        thread.start()
+        original_url = server.SPLUNK_URL
+        try:
+            server.SPLUNK_URL = f"http://127.0.0.1:{fake.server_port}"
+            self.assertTrue(server.check_splunk_login("admin", "test"))
+            self.assertEqual(server.splunk_search("sourcetype=linux_secure", 24)[0]["host"], "kali")
+        finally:
+            server.SPLUNK_URL = original_url
+            fake.shutdown()
+            fake.server_close()
 
 
 if __name__ == "__main__":

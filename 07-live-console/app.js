@@ -99,12 +99,31 @@ async function refresh() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
     render(data);
+    $('connect-form').hidden = true;
     $('status').className = 'status live'; $('status').innerHTML = '<i></i> LIVE';
   } catch (error) {
     $('status').className = 'status error'; $('status').innerHTML = '<i></i> DISCONNECTED';
     $('last-update').textContent = error.message;
+    if (error.message.includes('Connect to Splunk') || error.message.includes('401')) $('connect-form').hidden = false;
   }
 }
+
+$('connect-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const user = form.elements.user.value.trim();
+  const password = form.elements.password.value;
+  form.elements.password.value = '';
+  $('connect-error').textContent = '';
+  try {
+    const response = await fetch('/api/connect', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user,password})});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+    await refresh();
+  } catch (error) {
+    $('connect-error').textContent = error.message;
+  }
+});
 
 $('hours').addEventListener('change', event => { selectedHours = Number(event.target.value); refresh(); });
 $('refresh').addEventListener('click', refresh);
