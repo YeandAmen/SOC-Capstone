@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SOC Capstone | Live Trace</title>
+  <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="/stats.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>SOC CAPSTONE</span><small>/ LIVE TRACE</small></div>
+      <a class="splunk-link" href="http://127.0.0.1:8000" target="_blank" rel="noopener">OPEN SPLUNK <span aria-hidden="true">↗</span></a>
+    </header>
+    <div class="tabs" role="tablist" aria-label="View"><button class="tab active" type="button" aria-selected="true" id="traces-tab">TRACES</button><button class="tab" type="button" aria-selected="false" id="stats-tab">STATISTICS</button></div>
+    <section class="heading">
+      <div><p class="eyebrow">OBSERVED TELEMETRY / SPLUNK INDEX</p><h1>Attack activity <span id="total-count">0</span></h1><p class="subhead" id="last-update">Connecting to Splunk...</p></div>
+      <div class="controls"><span class="status" id="status"><i></i> CONNECTING</span><label class="time-label" for="hours">WINDOW</label><select id="hours" aria-label="Time window"><option value="1">1 HOUR</option><option value="6">6 HOURS</option><option value="24" selected>24 HOURS</option><option value="72">72 HOURS</option></select><button id="refresh" type="button" title="Refresh now" aria-label="Refresh now">↻</button></div>
+    </section>
+    <section class="trace-section" aria-labelledby="trace-title"><div class="section-head"><h2 id="trace-title">EVENT TRACE</h2><span id="trace-caption">Event volume by technique</span></div><div class="trace-wrap"><canvas id="trace" aria-label="Attack events over time" role="img"></canvas><div class="axis"><span id="axis-start">−24h</span><span>SELECTED WINDOW</span><span>NOW</span></div></div><div class="legend"><span><i class="swatch cyan"></i> SSH / T1110</span><span><i class="swatch amber"></i> ACCOUNT / T1136.001</span><span><i class="swatch violet"></i> POWERSHELL / T1059.001</span><span><i class="swatch red"></i> LOG CLEAR / T1070.001</span></div></section>
+    <section class="metrics" aria-label="Current detection summary"><div><span>EVENTS</span><strong id="metric-events">0</strong></div><div><span>DETECTIONS</span><strong id="metric-detections">0</strong></div><div><span>HOSTS</span><strong id="metric-hosts">0</strong></div><div><span>DATA SOURCE</span><strong class="source">SPLUNK · SOC_CAPSTONE</strong></div></section>
+    <section id="statistics" hidden aria-labelledby="statistics-title"><div class="section-head"><h2 id="statistics-title">TECHNIQUE BREAKDOWN</h2><span>Observed events in selected window</span></div><div id="technique-stats" class="technique-stats"></div></section>
+    <section class="detection-section" aria-labelledby="detections-title"><div class="section-head"><h2 id="detections-title">DETECTIONS</h2><span>Rule matches in selected window</span></div><div id="detections" class="detection-list"><p class="empty">Waiting for Splunk results.</p></div></section>
+    <section class="events-section" aria-labelledby="events-title"><div class="section-head"><h2 id="events-title">EVENTS</h2><span id="event-count">0 SHOWN</span></div><div class="table-scroll"><table><thead><tr><th>TIME</th><th>TECHNIQUE</th><th>EVENT</th><th>HOST</th><th>SOURCE / USER</th></tr></thead><tbody id="events"><tr><td colspan="5" class="empty">Waiting for Splunk results.</td></tr></tbody></table></div><p class="table-note" id="limit-note"></p></section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

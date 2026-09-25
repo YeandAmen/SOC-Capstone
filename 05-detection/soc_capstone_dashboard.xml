@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<dashboard>
+  <label>SOC Capstone — Attack Detection Dashboard</label>
+  <description>Real SPL detections for the simulated MITRE ATT&amp;CK techniques. Proof of ingestion + detection in one view.</description>
+
+  <!-- ===== T1110 Brute Force ===== -->
+  <row>
+    <panel>
+      <title>T1110 — SSH Brute Force (Linux auth.log) — top source IPs</title>
+      <chart>
+        <search>
+          <query>index=soc_capstone sourcetype=linux_secure "Failed password"
+| stats count by src
+| sort - count
+| head 10</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.axisTitleX.text">Source IP</option>
+        <option name="charting.axisTitleY.text">Failed attempts</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>T1110 — Windows 4625 failed logons — top source</title>
+      <table>
+        <search>
+          <query>index=soc_capstone sourcetype=WinEventLog:Security EventCode=4625
+| stats count, dc(Account_Name) as accounts_tried, values(Account_Name) as users
+  by Source_Network_Address
+| where count &gt;= 5
+| sort - count</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+
+  <!-- ===== T1136.001 Account creation ===== -->
+  <row>
+    <panel>
+      <title>T1136.001 — Local Account Creation (Security 4720) + Admin group adds</title>
+      <table>
+        <search>
+          <query>index=soc_capstone sourcetype=WinEventLog:Security (EventCode=4720 OR EventCode=4728 OR EventCode=4732)
+| eval action=case(EventCode=="4720","ACCOUNT_CREATED", EventCode=="4728","ADDED_TO_LOCALGROUP", EventCode=="4732","ADDED_TO_GLOBALGROUP")
+| table _time, host, action, Account_Name, TargetUserName
+| sort - _time</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+
+  <!-- ===== T1059.001 PowerShell download ===== -->
+  <row>
+    <panel>
+      <title>T1059.001 — PowerShell download cradle (Sysmon EID 1)</title>
+      <table>
+        <search>
+          <query>index=soc_capstone sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational EventID=1
+(Image="*powershell.exe" OR Image="*pwsh.exe")
+(CommandLine="*DownloadString*" OR CommandLine="*Invoke-WebRequest*" OR CommandLine="*Net.WebClient*" OR CommandLine="*EncodedCommand*")
+| table _time, host, User, Image, ParentImage, CommandLine
+| sort - _time</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+      </table>
+    </panel>
+    <panel>
+      <title>T1059.001 — Network connections from PowerShell (Sysmon EID 3)</title>
+      <table>
+        <search>
+          <query>index=soc_capstone sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational EventID=3
+(Image="*powershell.exe" OR Image="*pwsh.exe")
+| table _time, host, Image, DestinationIp, DestinationPort, DestinationHostname
+| sort - _time</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+
+  <!-- ===== T1070.001 Log clearing ===== -->
+  <row>
+    <panel>
+      <title>T1070.001 — Security log cleared (EID 1102 / Sysmon 4)</title>
+      <table>
+        <search>
+          <query>index=soc_capstone ((sourcetype=WinEventLog:Security EventCode=1102)
+  OR (sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational EventID=4))
+| table _time, host, EventCode, Computer, User
+| sort - _time</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+
+  <!-- ===== Proof of ingestion ===== -->
+  <row>
+    <panel>
+      <title>Proof of ingestion — event count by sourcetype</title>
+      <chart>
+        <search>
+          <query>index=soc_capstone
+| stats count by sourcetype
+| sort - count</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Events by host (forwarder health)</title>
+      <table>
+        <search>
+          <query>index=soc_capstone
+| stats count, sparkline(count,1h) as trend by host, sourcetype
+| sort - count</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+</dashboard>
